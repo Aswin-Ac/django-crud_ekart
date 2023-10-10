@@ -42,6 +42,7 @@ def seller_login(request):
 
 
 def customer_signup(request):
+    msg = ""
     if request.method == 'POST':
         f_name = request.POST['fname']
         l_name = request.POST['lastname'] 
