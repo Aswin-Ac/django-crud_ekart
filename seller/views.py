@@ -1,6 +1,8 @@
 from django.shortcuts import redirect, render
 
 from customer.models import seller
+from eKart_admin.models import Category
+from seller.models import Product
 
 # Create your views here.
 def seller_home(request):
@@ -8,7 +10,37 @@ def seller_home(request):
     return render(request, 'seller/seller_home.html',{'seller_details':newSeller})
 
 def add_product(request):
-    return render(request, 'seller/add_product.html')
+    category_list = Category.objects.all()
+    message = ''
+
+    if request.method == 'POST':
+        product_no = request.POST['product_no']
+        product_name = request.POST['product_name']
+        description = request.POST['description']
+        stock = request.POST['stock']
+        price = request.POST['price']
+        image = request.FILES['image']
+        category = request.POST['category']
+        seller1 = request.session['seller']
+
+        # product_exist = Product.objects.filter(product_no = )
+        product,created = Product.objects.get_or_create(product_no = product_no, seller = seller1, defaults = {
+            'product_no':product_no,
+            'product_name':product_name,
+            'description':description,
+            'stock':stock,
+            'price':price,
+            'image':image,
+            'product_category':Category.objects.get(id =int(category) ),
+            'seller':seller.objects.get(id = seller1),
+        })
+        if created:
+            message = 'Product added'
+        else:
+            message = 'Product already exist'
+    context = {'category':category_list,
+                   'message':message}
+    return render(request, 'seller/add_product.html',context)
 
 def add_category(request):
     return render(request, 'seller/add_category.html')
@@ -57,8 +89,7 @@ def change_password(request):
         
     return render(request,'seller/change_password.html',{'msg':pwd_status})
 
-# def seller_logout(request):
-#     del request.session['seller']
-#     request.session.flush()
-
-#     return redirect('seller:seller_home')
+def seller_logout(request):
+    del request.session['seller']
+    request.session.flush()
+    return redirect('customer:seller_login')
