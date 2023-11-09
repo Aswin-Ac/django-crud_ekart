@@ -4,21 +4,33 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 from customer.models import Customer,seller
+from seller.models import Product
 # from .models import Customer
 # Create your views here.
 
 
 def customer_home(request):
     customer = Customer.objects.get(id = request.session['customer'])
-    return render(request, 'customer/customer_home.html',{'customer_details':customer})
+    products = Product.objects.all()
+    context = {
+        'products':products,
+        'customer_details':customer
+    }
+    return render(request, 'customer/customer_home.html',context)
 
 
 def store(request):
-    return render(request, 'customer/store.html')
+    query = request.GET.get('query')
+    if query == 'all':
+        product = Product.objects.all()
+    else:
+        product = Product.objects.filter(product_category = query)
+    return render(request, 'customer/store.html',{'products':product})
 
 
-def product_detail(request):
-    return render(request, 'customer/product_detail.html')
+def product_detail(request,id):
+    product = Product.objects.get(id = id)
+    return render(request, 'customer/product_detail.html',{'product':product})
 
 
 def cart(request):
